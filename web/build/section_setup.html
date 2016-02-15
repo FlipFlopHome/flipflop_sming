@@ -1,0 +1,29 @@
+<h2>Module Setup</h2>
+ <p>Welcome to the FlipFlop Light Switch Module.</p>
+ <p>This page is used to configure the Module.</p>
+<hr>
+<h3>Module Operating Mode</h3>
+ <p>Select the Mode to be an Access Point (AP) or a Station</p>
+<form action="wifi_info" method="POST">
+   <br>
+   <label for="ap_mode_select">AP Mode</label>
+   <input type="radio" name="mode" id="ap_mode" value="ap_mode" {ap_mode_select} >
+   <br>
+   <label for="station_mode_select">Station Mode</label>
+   <input type="radio" name="mode" id="station_mode" value="station_mode" {station_mode_select} >
+   <br>
+<hr>
+<h3>AP Mode</h3>
+   <p>IP address when in AP mode</p>
+   IP ADDRESS: {ip_address_ap_var}
+<hr>
+<h3>Station Mode</h3>
+   SSID:<br>
+   <input type="text" name="ssid" value="">
+   <br>
+   Password:<br>
+   <input type="text" name="pwd" value="">
+   <br><br>
+<hr>
+	<input type="submit" name="submit" class="button" value="Submit" style="float: right;">
+</form>

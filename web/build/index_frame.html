@@ -1,0 +1,77 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>       
+<style>
+#header {
+    background-color:black;
+    color:white;
+    text-align:center;
+    padding:5px;
+}
+#nav {
+    line-height:30px;
+    background-color:#eeeeee;
+    height:1000px;
+    width:150px;
+    float:left;
+    padding:5px;
+}
+#section {
+    width:500px;
+    float:left;
+    padding:10px;
+}
+#footer {
+    background-color:black;
+    color:white;
+    clear:both;
+    text-align:center;
+    padding:5px;
+}
+table {
+    width:100%;
+}
+table, th, td {
+    border: 1px solid black;
+    border-collapse: collapse;
+}
+th, td {
+    padding: 5px;
+    text-align: left;
+}
+table#t01 tr:nth-child(even) {
+    background-color: #eee;
+}
+table#t01 tr:nth-child(odd) {
+   background-color:#fff;
+}
+table#t01 th	{
+    background-color: black;
+    color: white;
+}
+</style>
+</head>
+<body>
+<div id="header">
+	<h1><img style="vertical-align: text-bottom; padding-right: 5px;" src="IMG_FlipFlop.png">
+	<b>FlipFlop Light Switch Module</b></h1>
+</div>
+<div id="nav">
+	<a href="/" id="section_home">Home<br></a>
+	<a href="/module_setup" id="section_module_setup">Module Setup<br></a>
+	<a href="/module_info" id="section_module_info">Module Info</a><br>
+	<a href="/restart" id="section_restart">Restart Module</a><br>
+	<a href="/test" >Test...</a>
+</div>
+
+<div id="section">
+		{section_var}
+</div>
+
+<div id="footer">
+	Copyright © flip-flop.io
+</div>
+</body>
+</html>
+
