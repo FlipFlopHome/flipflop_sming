@@ -38,5 +38,5 @@ COM_PORT = /dev/tty.usbserial-FTWDVX11
 
 ## SPIFFS options
 #DISABLE_SPIFFS = 1
-SPIFF_FILES = web/tmp/
+SPIFF_FILES = web/build/
 
