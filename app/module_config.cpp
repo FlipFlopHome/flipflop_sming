@@ -6,7 +6,8 @@
 
 BssList networks;
 String network, password, mode;
-Timer connectionTimer;
+//Timer connectionTimer;
+//Timer scanSsidTimer;
 
 static String ApMode_SSID;
 
@@ -134,7 +135,6 @@ void onWifiInfo(HttpRequest &request, HttpResponse &response)
 {
 	char section_data[500];
 	String str;
-	String flashId;
 	EStationConnectionStatus connectionStatus;
 
 	if (request.getRequestMethod() == RequestMethod::POST)
@@ -153,13 +153,130 @@ void onWifiInfo(HttpRequest &request, HttpResponse &response)
 		else
 		{
 			WifiStation.enable(true);
-			WifiStation.config(network, password);
+			//WifiStation.config(network, password);
 		}
 
 		//ConfigStationModeCheckStatusTmrCntr = 0;
 		//connectionTimer.initializeMs(1000, makeConnection).start();
 
 		//StationModeConnectionResponse = &response;
+	}
+
+
+
+	TemplateFileStream *tmpl = new TemplateFileStream("index_frame.html");
+	//TemplateFileStream *section = new TemplateFileStream("home_section.html");
+	auto &vars = tmpl->variables();
+
+	if( mode == "ap_mode" )
+	{
+		str = fileGetContent("section_station_status.html");
+
+		if( str == "" )
+			str = "<h2>Error section_station_status.html is too big...</h2>";
+		else
+		{
+			str.replace("{ssid_var}", ApMode_SSID);
+			str.replace("{ip_address_var}", WifiAccessPoint.getIP().toString());
+			if( WifiAccessPoint.isEnabled() == true )
+				str.replace("{connection_status_var}", "<b><font color=green> WiFi AP Connection - Success </font></b>");
+			else
+				str.replace("{connection_status_var}", "<b><font color=orange> WiFi AP Connection - Failed... </font></b>");
+		}
+	}
+	else /* Need to connect to the WiFi network so give the list of Available Network */
+	{
+		  String tempTableRows;
+		  String wifiTableRowTemplate;
+		  int i;
+
+		  tempTableRows = "";
+
+		  /* Configure each row for the scan wifi table */
+		  for( i=0; i < networks.count(); i++)
+		  {
+			  /* Read the template file for the rows */
+			  wifiTableRowTemplate = fileGetContent("wifi_scan_table_row.html");
+
+			  if( wifiTableRowTemplate == "" )
+			  {
+					str = "<h2>Error wifi_scan_table_row.html is too big...</h2>";
+					break;
+			  }
+			  else
+			  { /* Fill the table with the right variable */
+
+				if (networks[i].hidden) continue;
+
+				wifiTableRowTemplate.replace("{wifi_select_id_var}", String(i, 10) );
+				wifiTableRowTemplate.replace("{ssid_id_var}", String(i, 10) );
+				wifiTableRowTemplate.replace("{pwd_id_var}", String(i, 10) );
+				wifiTableRowTemplate.replace("{scan_ssid_name_var}", networks[i].ssid );
+				wifiTableRowTemplate.replace("{signal_quality_var}", String(networks[i].rssi, 10) );
+			  }
+			  /* Add a custom field also */
+
+			  /* append the result to the temp String variable */
+			  tempTableRows.concat(wifiTableRowTemplate);
+
+		  }
+
+		  /* Add a custom field also */
+		  /* Read the template file for the rows */
+		  wifiTableRowTemplate = fileGetContent("wifi_scan_table_row.html");
+
+		  if( wifiTableRowTemplate == "" )
+				str = "<h2>Error wifi_scan_table_row.html is too big...</h2>";
+		  else
+		  {
+			wifiTableRowTemplate.replace("{wifi_select_id_var}", String(i, 10) );
+			wifiTableRowTemplate.replace("{ssid_id_var}", String(i, 10) );
+			wifiTableRowTemplate.replace("{pwd_id_var}", String(i, 10) );
+			//item["id"] = (int)networks[i].getHashId();
+			// Copy full string to JSON buffer memory
+			//wifiTableRowTemplate.replace("disabled", "");
+			wifiTableRowTemplate.replace("{scan_ssid_name_var}", "CustomSSID" );
+			//wifiTableRowTemplate.replace("{scan_ssid_name_var}", "<input type=\"text\" name=\"ssid_id_" + String(i, 10) + " value=\"CustomSSID\">" );
+			//item["title"] = networks[i].ssid;
+			wifiTableRowTemplate.replace("{signal_quality_var}", "-" );
+
+		    /* append the result to the temp String variable */
+			tempTableRows.concat(wifiTableRowTemplate);
+
+		  }
+
+		  str = fileGetContent("wifi_scan.html");
+
+			if( str == "" )
+				str = "<h2>Error wifi_scan.html is too big...</h2>";
+			else
+			{
+				str.replace("{wifi_scan_table_rows_var}", tempTableRows);
+			}
+	}
+
+	vars["section_var"] = str;
+
+	response.sendTemplate(tmpl); // will be automatically deleted
+
+
+}
+
+void onWifiStationConnect(HttpRequest &request, HttpResponse &response)
+{
+	char section_data[500];
+	String str;
+	String flashId;
+	EStationConnectionStatus connectionStatus;
+	String wifi_table_id;
+
+	if (request.getRequestMethod() == RequestMethod::POST)
+	{
+		wifi_table_id = request.getPostParameter("wifi_select_id");
+		//network = request.getPostParameter("ssid");
+		network = request.getPostParameter("ssid_id_"+wifi_table_id);
+		password = request.getPostParameter("pwd_id_"+wifi_table_id);
+		WifiStation.config(network, password);
 	}
 
 
@@ -308,7 +425,8 @@ void startWebServer()
 	server.addPath("/", onHome);
 	server.addPath("/module_setup", onSetup);
 	server.addPath("/module_info", onInfo);
-	server.addPath("/wifi_info", onWifiInfo);
+	server.addPath("/wifi_mode", onWifiInfo);
+	server.addPath("/wifi_connect", onWifiStationConnect);
 	server.addPath("/restart", onRestart);
 	server.addPath("/test", onTest);
 
@@ -356,8 +474,11 @@ void ModuleConfig_init()
 		WifiStation.enable(true);
 	}
 
+	/* Force a first WiFi network scan */
 	WifiStation.startScan(networkScanCompleted);
 
+	/* Start a periodic scan of WiFi networks */
+	//scanSsidTimer.initializeMs(10000, networkScanStart).start();
 
 	/* Get module AP Mode SSID */
 	ApMode_SSID = "FlipFlop_"+WifiStation.getMAC().substring(6);
