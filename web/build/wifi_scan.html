@@ -1,20 +1,8 @@
-<h2>Module WiFi Scan List</h2>
-	<p>If your network is hidden, use the CustomSSID field</p>
-	<br>
-<form action="wifi_mode" method="POST">
-	<input type="submit" name="submit" class="button" value="Rescan" style="float: left;">
-</form>
-<br>
+<h2>WiFi Scan List</h2>
+ <p>Select a Network in the List
+    or use the CustomSSID field </p>
 <form action="wifi_connect" method="POST">
-<table id="t01">
-  <tr>
-    <th>Select</th>
-    <th>Netowrk SSID</th>		
-    <th>Password</th>
-    <th>Signal Strength</th>
-  </tr>
 {wifi_scan_table_rows_var}
-</table>
 <hr>
 	<input type="submit" name="submit" class="button" value="Connect" style="float: right;">
 </form>

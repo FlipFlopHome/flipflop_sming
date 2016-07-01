@@ -1,12 +1,17 @@
-<h2>Station Mode Configuration Status</h2>
+<h2>Configuration Status</h2>
 <p>Please restart the module for the new configuration to take effect</p>
 <br>
-<p>SSID: {ssid_var}
-<br>
+SSID: {ssid_var}
+<br><br>
 <b>Connection Status -</b>{connection_status_var}
 <br>
-IP ADDRESS: {ip_address_var}
+Note: Use the Web Browser Refresh button to update the Connection Status
 <br><br>
-<form action="/wifi_connect">
-    <input type="submit" value="Refresh">
+IP ADDRESS: {ip_address_var}
+<br>
+<hr>
+<form action="restart" method="POST">
+<p>Click Apply Changes below, this will restart the FlipFlop Module with the new configuration</p>
+	<input type="submit" name="apply" class="button" value="Apply Changes">
 </form>
+

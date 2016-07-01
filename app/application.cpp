@@ -72,6 +72,27 @@ void onRelayStatus(HttpRequest &request, HttpResponse &response)
 
 	response.sendString(responseString); // will be automatically deleted
 }
+void onRelayOff(HttpRequest &request, HttpResponse &response)
+{
+	String responseString;
+
+    digitalWrite(GPIO_BUTTON_LED, LOW);
+    digitalWrite(GPIO_RELAY_CTRL, LOW);
+    responseString = "{\"relay\": 0}";
+
+	response.sendString(responseString); // will be automatically deleted
+}
+
+void onRelayOn(HttpRequest &request, HttpResponse &response)
+{
+	String responseString;
+
+    digitalWrite(GPIO_BUTTON_LED, HIGH);
+    digitalWrite(GPIO_RELAY_CTRL, HIGH);
+    responseString = "{\"relay\": 1}";
+
+	response.sendString(responseString); // will be automatically deleted
+}
 
 void onTmp(HttpRequest &request, HttpResponse &response)
 {
@@ -150,6 +171,8 @@ void startAppServer()
 	server.addPath("/led/1", onLedOn);
 	server.addPath("/adc", onAdc);
 	server.addPath("/relay", onRelayStatus);
+	server.addPath("/relay/0", onRelayOff);
+	server.addPath("/relay/1", onRelayOn);
 	server.addPath("/tmp", onTmp);
 	server.addPath("/tmp_c", onTmpC);
 	server.addPath("/tmp_f", onTmpF);

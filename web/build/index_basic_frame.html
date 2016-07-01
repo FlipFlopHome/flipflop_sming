@@ -65,7 +65,40 @@ table#t01 th	{
 </div>
 
 <div id="section">
-{section_var}
+
+<h2>Module Setup</h2>
+ <p>Welcome to the FlipFlop Light Switch Module.</p>
+ <p>This page is used to configure the Module.</p>
+<hr>
+<h3>Module Operating Mode</h3>
+ <p>Select the Mode to be an Access Point (AP) or a Station</p>
+<form action="wifi_connect" method="POST">
+   <br>
+   <label for="ap_mode_select">AP Mode</label>
+   <input type="radio" name="mode" id="ap_mode" value="ap_mode" checked="checked" >
+   <hr>
+   <label for="station_mode_select">Station Mode</label>
+   <input type="radio" name="mode" id="station_mode" value="station_mode" >
+   <br>
+ 	<p>Enter Network SSID and Password in the fields below, then click Submit </p>
+   <table id="t01">
+  	<tr>
+    <th>Select</th>
+    <th>Netowrk SSID</th>		
+    <th>Signal Strength</th>
+    <th>Password</th>
+  	</tr>
+	  <tr>
+	    <td><input type="radio" name="wifi_select_id" value="custom" checked="checked"></td>
+	    <td><input type="text" name="custom_ssid" value=""></td>		
+	    <td>-</td>
+	    <td><input type="text" name="custom_pwd" value=""></td>
+	  </tr>
+  	</table>
+<hr>
+	<input type="submit" name="submit" class="button" value="WiFi_Connect" style="float: right;">
+</form>
+
 </div>
 
 <div id="footer">

@@ -14,19 +14,20 @@ static String ApMode_SSID;
 void onHome(HttpRequest &request, HttpResponse &response)
 {
 
-	char section_data[500];
+	//char section_data[500];
 
 	Serial.println("On Home Web Page...");
 
-	TemplateFileStream *tmpl = new TemplateFileStream("index_frame.html");
+	TemplateFileStream *tmpl = new TemplateFileStream("index_basic_frame.html");
 	//TemplateFileStream *section = new TemplateFileStream("home_section.html");
 	auto &vars = tmpl->variables();
 
-
+#if(0)
 	if( fileGetContent("section_home.html", section_data, sizeof(section_data) ) <= 0)
 		vars["section_var"] = "<h2>Error section_home.html is too big...</h2>";
 	else
 		vars["section_var"] = section_data;
+#endif
 
 	response.sendTemplate(tmpl); // will be automatically deleted
 
@@ -133,9 +134,13 @@ void onInfo(HttpRequest &request, HttpResponse &response)
 
 void onWifiInfo(HttpRequest &request, HttpResponse &response)
 {
-	char section_data[500];
 	String str;
-	EStationConnectionStatus connectionStatus;
+	String tempTableRows;
+	String wifiTableRowTemplate;
+	uint32_t heapSizeInt;
+	String heapSizeString;
+	int i;
+	int ssidCount;
 
 	if (request.getRequestMethod() == RequestMethod::POST)
 	{
@@ -186,15 +191,16 @@ void onWifiInfo(HttpRequest &request, HttpResponse &response)
 	}
 	else /* Need to connect to the WiFi network so give the list of Available Network */
 	{
-		  String tempTableRows;
-		  String wifiTableRowTemplate;
-		  int i;
 
 		  tempTableRows = "";
-
+		  ssidCount = networks.count();
 		  /* Configure each row for the scan wifi table */
-		  for( i=0; i < networks.count(); i++)
+		  for( i=0; i <= ssidCount; i++)
+		  //for( i=0; i <= 3; i++)
 		  {
+			  Serial.println(String(i, 10));
+
+			  wifiTableRowTemplate = "";
 			  /* Read the template file for the rows */
 			  wifiTableRowTemplate = fileGetContent("wifi_scan_table_row.html");
 
@@ -206,56 +212,65 @@ void onWifiInfo(HttpRequest &request, HttpResponse &response)
 			  else
 			  { /* Fill the table with the right variable */
 
-				if (networks[i].hidden) continue;
+				//if (networks[i].hidden && (i < networks.count()) ) {continue;}
 
 				wifiTableRowTemplate.replace("{wifi_select_id_var}", String(i, 10) );
-				wifiTableRowTemplate.replace("{ssid_id_var}", String(i, 10) );
+				//wifiTableRowTemplate.replace("{ssid_id_var}", String(i, 10) );
 				wifiTableRowTemplate.replace("{pwd_id_var}", String(i, 10) );
-				wifiTableRowTemplate.replace("{scan_ssid_name_var}", networks[i].ssid );
-				wifiTableRowTemplate.replace("{signal_quality_var}", String(networks[i].rssi, 10) );
+				if( i == ssidCount )
+				//if( i >= 3 )
+				{
+					wifiTableRowTemplate.replace("{scan_ssid_name_var}", "<input type=\"text\" name=\"custom_ssid\" value=\"\">" );
+					wifiTableRowTemplate.replace("{signal_quality_var}", "---" );
+				}
+				else
+				{
+					wifiTableRowTemplate.replace("{scan_ssid_name_var}", networks[i].ssid );
+					wifiTableRowTemplate.replace("{signal_quality_var}", String(networks[i].rssi, 10) );
+					//wifiTableRowTemplate.replace("{scan_ssid_name_var}", String(i, 10) );
+					//wifiTableRowTemplate.replace("{signal_quality_var}", String(i, 10) );
+				}
 			  }
 			  /* Add a custom field also */
 
 			  /* append the result to the temp String variable */
-			  tempTableRows.concat(wifiTableRowTemplate);
+			  //tempTableRows.concat(wifiTableRowTemplate);
+			  tempTableRows = tempTableRows + wifiTableRowTemplate;
+
+			  heapSizeInt = system_get_free_heap_size();
+			  heapSizeString = String(heapSizeInt, 10);
+			  Serial.println("Heap Free Size: " + heapSizeString);
 
 		  }
 
-		  /* Add a custom field also */
-		  /* Read the template file for the rows */
-		  wifiTableRowTemplate = fileGetContent("wifi_scan_table_row.html");
-
-		  if( wifiTableRowTemplate == "" )
-				str = "<h2>Error wifi_scan_table_row.html is too big...</h2>";
-		  else
-		  {
-			wifiTableRowTemplate.replace("{wifi_select_id_var}", String(i, 10) );
-			wifiTableRowTemplate.replace("{ssid_id_var}", String(i, 10) );
-			wifiTableRowTemplate.replace("{pwd_id_var}", String(i, 10) );
-			//item["id"] = (int)networks[i].getHashId();
-			// Copy full string to JSON buffer memory
-			//wifiTableRowTemplate.replace("disabled", "");
-			wifiTableRowTemplate.replace("{scan_ssid_name_var}", "CustomSSID" );
-			//wifiTableRowTemplate.replace("{scan_ssid_name_var}", "<input type=\"text\" name=\"ssid_id_" + String(i, 10) + " value=\"CustomSSID\">" );
-			//item["title"] = networks[i].ssid;
-			wifiTableRowTemplate.replace("{signal_quality_var}", "-" );
-
-		    /* append the result to the temp String variable */
-			tempTableRows.concat(wifiTableRowTemplate);
-
-		  }
+		  Serial.println(String(i, 10));
 
 		  str = fileGetContent("wifi_scan.html");
 
-			if( str == "" )
-				str = "<h2>Error wifi_scan.html is too big...</h2>";
-			else
-			{
-				str.replace("{wifi_scan_table_rows_var}", tempTableRows);
-			}
+		if( str == "" )
+		{
+			str = "<h2>Error wifi_scan.html is too big...</h2>";
+		}
+		else
+		{
+			str.replace("{wifi_scan_table_rows_var}", tempTableRows);
+		}
+		i++;
+		Serial.println(String(i, 10));
+
 	}
 
+	  heapSizeInt = system_get_free_heap_size();
+	  heapSizeString = String(heapSizeInt, 10);
+	  Serial.println("Heap Free Size: " + heapSizeString);
+
 	vars["section_var"] = str;
+	i++;
+	Serial.println(String(i, 10));
+
+	  heapSizeInt = system_get_free_heap_size();
+	  heapSizeString = String(heapSizeInt, 10);
+	  Serial.println("Heap Free Size (Last): " + heapSizeString);
 
 	response.sendTemplate(tmpl); // will be automatically deleted
 
@@ -264,19 +279,39 @@ void onWifiInfo(HttpRequest &request, HttpResponse &response)
 
 void onWifiStationConnect(HttpRequest &request, HttpResponse &response)
 {
-	char section_data[500];
+	char section_data[1000];
 	String str;
 	String flashId;
 	EStationConnectionStatus connectionStatus;
 	String wifi_table_id;
+	int scanTableIndex;
 
 	if (request.getRequestMethod() == RequestMethod::POST)
 	{
-		wifi_table_id = request.getPostParameter("wifi_select_id");
-		//network = request.getPostParameter("ssid");
-		network = request.getPostParameter("ssid_id_"+wifi_table_id);
-		password = request.getPostParameter("pwd_id_"+wifi_table_id);
-		WifiStation.config(network, password);
+		if( request.getPostParameter("submit") == "WiFi_Connect")
+		{
+
+			mode = request.getPostParameter("mode");
+			network = request.getPostParameter("custom_ssid");
+			password = request.getPostParameter("custom_pwd");
+
+			if( mode == "ap_mode") // AP Mode
+			{
+				WifiAccessPoint.enable(true);
+				WifiAccessPoint.config(ApMode_SSID, "", AUTH_OPEN);
+				// Optional: Change IP addresses (and disable DHCP)
+				WifiAccessPoint.setIP(IPAddress(192, 168, 4, 1));
+			}
+			else // Station Mode
+			{
+				WifiStation.enable(true);
+				WifiStation.config(network, password);
+			}
+
+			Serial.println(network);
+			Serial.println(password);
+			//WifiStation.config(network, password);
+		}
 	}
 
 
@@ -354,7 +389,7 @@ void onRestart(HttpRequest &request, HttpResponse &response)
 
 	if (request.getRequestMethod() == RequestMethod::POST)
 	{
-		if( request.getPostParameter("apply") == "Apply Changes");
+		if( request.getPostParameter("apply") == "Apply Changes")
 		{
 			if( mode == "ap_mode" )
 			{
@@ -403,17 +438,9 @@ void onRestart(HttpRequest &request, HttpResponse &response)
 
 void onTest(HttpRequest &request, HttpResponse &response)
 {
-	char section_data[500];
 
-	TemplateFileStream *tmpl = new TemplateFileStream("index_frame.html");
+	TemplateFileStream *tmpl = new TemplateFileStream("test.html");
 	//TemplateFileStream *section = new TemplateFileStream("home_section.html");
-	auto &vars = tmpl->variables();
-
-
-	if( fileGetContent("test.html", section_data, sizeof(section_data) ) <= 0)
-		vars["section_var"] = "<h2>Error test.html is too big...</h2>";
-	else
-		vars["section_var"] = section_data;
 
 	response.sendTemplate(tmpl); // will be automatically deleted
 }
@@ -473,6 +500,9 @@ void ModuleConfig_init()
 	{
 		WifiStation.enable(true);
 	}
+
+	/* Disconnect to stop trying to auto connect to the WiFi network */
+	//WifiStation.disconnect();
 
 	/* Force a first WiFi network scan */
 	WifiStation.startScan(networkScanCompleted);

@@ -62,6 +62,7 @@ void AppTask_Task(void)
     		{
     			//Toggle Output
     			buttonStateLatchValue = ~buttonStateLatchValue & 0x01;
+    			digitalWrite(GPIO_BUTTON_LED, buttonStateLatchValue);
     			digitalWrite(GPIO_RELAY_CTRL, buttonStateLatchValue);
     			Serial.print("Toggle\r\n");
     		}
